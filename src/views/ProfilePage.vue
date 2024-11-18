@@ -12,7 +12,7 @@
     <ion-content :fullscreen="true">
       <!-- Avatar -->
       <div id="avatar-container">
-        <img v-if="user?.photoURL" src="https://www.afiftharavi.site/profile-pics/A2.jpeg" id="avatar-icon" alt="Profile Picture" />
+        <img v-if="user?.photoURL" :src="user.photoURL" id="avatar-icon" alt="Profile Picture" />
         <ion-icon v-else :icon="person" id="avatar-icon" color="medium"></ion-icon>
       </div>
 
