@@ -5,7 +5,7 @@ NIM: H1D022095
 Shift Baru: A
 Shift Lama: A
 ```
-
+# Tugas 9 dan 10 Praktikum Pemrograman Mobile
 ## Router
 
 Aplikasi memiliki 4 route utama:
@@ -138,5 +138,171 @@ const logout = async () => {
   <img src="./public/1.png" alt="Image 1" width="30%">
 </p>
 
+## Tugas 10
 
+### 1. Home
+**Hame* menampilkan daftar tugas yang aktif dan selesai, dirender menggunakan `src\views\HomePage.vue`. Data tugas diambil dari Firebase.
+
+#### Model Data
+Tipe data `Todo` didefinisikan dalam `firestore.ts`:
+
+```ts
+export interface Todo {
+  id?: string;
+  title: string;
+  description: string;
+  status: boolean; // true = selesai, false = aktif
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+#### Memuat Data Tugas
+Fungsi `loadTodos` digunakan untuk mengambil data secara asinkron dengan indikator loading.
+
+```ts
+const loadTodos = async (isLoading = true) => {
+  try {
+    if (isLoading) {
+      const loading = await loadingController.create({ message: "Loading..." });
+      await loading.present();
+    }
+    todos.value = await firestoreService.getTodos();
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loading?.dismiss();
+  }
+};
+```
+
+#### Mengambil Data Tugas
+Data tugas diambil dari Firebase dan diurutkan berdasarkan `updatedAt` secara descending.
+
+```ts
+async getTodos(): Promise<Todo[]> {
+  const q = query(this.getTodoRef(), orderBy("updatedAt", "desc"));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(
+    (doc) => ({ id: doc.id, ...doc.data() } as Todo)
+  );
+}
+```
+
+---
+
+### 2. Tambah dan Ubah Tugas
+Tugas dapat ditambahkan atau diubah melalui modal form.
+
+#### UI Modal
+Form digunakan untuk menangani penambahan dan pengeditan tugas.
+
+```html
+<ion-input v-model="todo.title" placeholder="Masukkan Judul"></ion-input>
+<ion-textarea v-model="todo.description" placeholder="Masukkan Deskripsi"></ion-textarea>
+<ion-button @click="input">{{ editingId ? "Ubah" : "Tambah" }} Todo</ion-button>
+```
+
+#### Proses Submit
+Fungsi `handleSubmit` memvalidasi input, membedakan proses tambah dan ubah, serta memperbarui UI.
+
+```ts
+const handleSubmit = async (todo: Omit<Todo, "id" | "createdAt" | "updatedAt" | "status">) => {
+  if (!todo.title) return showToast("Judul harus diisi", "warning");
+
+  try {
+    if (editingId.value) {
+      await firestoreService.updateTodo(editingId.value, todo as Todo);
+      showToast("Tugas berhasil diubah", "success");
+    } else {
+      await firestoreService.addTodo(todo as Todo);
+      showToast("Tugas berhasil ditambahkan", "success");
+    }
+    loadTodos();
+  } catch (error) {
+    console.error(error);
+    showToast("Terjadi kesalahan", "danger");
+  } finally {
+    editingId.value = null;
+  }
+};
+```
+
+#### Integrasi Firebase
+- **Tambah Tugas**: Menambahkan tugas baru ke Firestore.
+
+```ts
+async addTodo(todo: Omit<Todo, "id">) {
+  const docRef = await addDoc(this.getTodoRef(), {
+    ...todo,
+    status: false,
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+  });
+  return docRef.id;
+}
+```
+
+- **Ubah Tugas**: Mengubah tugas berdasarkan ID.
+
+```ts
+async updateTodo(id: string, todo: Partial<Todo>) {
+  const docRef = doc(this.getTodoRef(), id);
+  await updateDoc(docRef, { ...todo, updatedAt: Timestamp.now() });
+}
+```
+
+---
+
+### 3. Ubah Status Tugas
+Status tugas dapat diubah menjadi selesai atau aktif dengan menggeser dan mengetuk ikon status.
+
+#### Fungsi Ubah Status
+Ikon status memicu fungsi `handleStatus`.
+
+```ts
+const handleStatus = async (statusTodo: Todo) => {
+  try {
+    await firestoreService.updateStatus(statusTodo.id!, !statusTodo.status);
+    showToast(`Tugas ditandai sebagai ${!statusTodo.status ? "selesai" : "aktif"}`, "success");
+    loadTodos();
+  } catch (error) {
+    console.error(error);
+    showToast("Gagal memperbarui status", "danger");
+  }
+};
+```
+
+---
+
+### 4. Hapus Tugas
+Tugas dapat dihapus dengan menggeser ke kanan atau menekan tombol hapus.
+
+#### Fungsi Hapus Tugas
+Fungsi `handleDelete` digunakan untuk menghapus tugas.
+
+```ts
+const handleDelete = async (deleteTodo: Todo) => {
+  try {
+    await firestoreService.deleteTodo(deleteTodo.id!);
+    showToast("Tugas berhasil dihapus", "success");
+    loadTodos();
+  } catch (error) {
+    console.error(error);
+    showToast("Gagal menghapus tugas", "danger");
+  }
+};
+```
+
+#### Integrasi Firebase
+Menghapus tugas berdasarkan ID dari Firestore.
+
+```ts
+async deleteTodo(id: string) {
+  const docRef = doc(this.getTodoRef(), id);
+  await deleteDoc(docRef);
+}
+```
+
+---
 
