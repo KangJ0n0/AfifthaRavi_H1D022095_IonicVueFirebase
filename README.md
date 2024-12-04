@@ -157,6 +157,10 @@ export interface Todo {
 }
 ```
 
+<p align="center">
+  <img src="./public/home.png" alt="Image 2" width="30%"> &nbsp;&nbsp;&nbsp;
+</p>
+
 #### Memuat Data Tugas
 Fungsi `loadTodos` digunakan untuk mengambil data secara asinkron dengan indikator loading.
 
@@ -227,6 +231,11 @@ const handleSubmit = async (todo: Omit<Todo, "id" | "createdAt" | "updatedAt" | 
   }
 };
 ```
+<p align="center">
+  <img src="./public/tambah.png" alt="Image 2" width="30%"> &nbsp;&nbsp;&nbsp;
+  <img src="./public/tambah+.png" alt="Image 2" width="30%"> 
+</p>
+
 
 #### Integrasi Firebase
 - **Tambah Tugas**: Menambahkan tugas baru ke Firestore.
@@ -274,6 +283,10 @@ const handleStatus = async (statusTodo: Todo) => {
 ```
 
 ---
+<p align="center">
+  <img src="./public/centang.png" alt="Image 2" width="30%"> &nbsp;&nbsp;&nbsp;
+  <img src="./public/centang+.png" alt="Image 2" width="30%"> 
+</p>
 
 ### 4. Hapus Tugas
 Tugas dapat dihapus dengan menggeser ke kanan atau menekan tombol hapus.
@@ -294,6 +307,7 @@ const handleDelete = async (deleteTodo: Todo) => {
 };
 ```
 
+
 #### Integrasi Firebase
 Menghapus tugas berdasarkan ID dari Firestore.
 
@@ -306,3 +320,7 @@ async deleteTodo(id: string) {
 
 ---
 
+<p align="center">
+  <img src="./public/hapus.png" alt="Image 2" width="30%"> &nbsp;&nbsp;&nbsp;
+  <img src="./public/hapus+.png" alt="Image 2" width="30%"> 
+</p>
